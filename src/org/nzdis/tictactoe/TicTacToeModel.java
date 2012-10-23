@@ -9,6 +9,7 @@ public class TicTacToeModel extends FMeObject {
 	private String[] positions = { "*", "1", "2", "3", "4", "5", "6", "7", "8",
 			"9" }; // "board" positions
 	private boolean new_game;
+	private String lastMove="";
 
 	public TicTacToeModel() {
 	}
@@ -51,12 +52,19 @@ public class TicTacToeModel extends FMeObject {
 		// The game is over if either "X" or "O" have a winning
 		// position or
 		// there are no more free positions
-		if (!hasFreePositions())
+		if (!hasFreePositions()){
+			lastMove="";
 			return true;
-		if (hasWon("X"))
+		}
+		if (hasWon("X")){
+			lastMove="";
 			return true;
-		if (hasWon("O"))
+		}
+		if (hasWon("O")){
+			lastMove="";
 			return true;
+		}
+			
 		return false;
 	}
 
@@ -109,7 +117,7 @@ public class TicTacToeModel extends FMeObject {
 		// if the position is not free return false indicating the move
 		// did not
 		// succeed
-		if (isFree(aPosition)) {
+		if (isFree(aPosition)&&(!lastMove.equals("X"))) {
 			positions[aPosition] = "X";
 			return true;
 		}
@@ -122,7 +130,7 @@ public class TicTacToeModel extends FMeObject {
 		// if the position is not free return false indicating the move
 		// did not
 		// succeed
-		if (isFree(aPosition)) {
+		if (isFree(aPosition)&&(!lastMove.equals("O"))) {
 			positions[aPosition] = "O";
 			return true;
 		}
@@ -134,6 +142,7 @@ public class TicTacToeModel extends FMeObject {
 		for (int i = 1; i <= 9; i++) {
 			positions[i] = String.valueOf(i);
 		}
+		lastMove="";
 	}
 
 	public void changedObject() {
@@ -150,6 +159,7 @@ public class TicTacToeModel extends FMeObject {
 
 	public void deserialize(FMeObject serObject) {
 		this.positions = ((TicTacToeModel) serObject).getPositions();
+		this.lastMove=((TicTacToeModel) serObject).getLastMove();
 	}
 
 	private static class Factory extends FragMeFactory {
@@ -168,6 +178,14 @@ public class TicTacToeModel extends FMeObject {
 
 	public void setPositions(String[] positions) {
 		this.positions = positions;
+	}
+	
+	public String getLastMove(){
+		return lastMove;
+	}
+	
+	public void setLastMove(String lastMove){
+		this.lastMove=lastMove;
 	}
 
 	public boolean isNew_game() {

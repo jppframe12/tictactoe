@@ -9,10 +9,13 @@ import org.nzdis.fragme.helpers.StartupWaitForObjects;
 import org.nzdis.fragme.util.NetworkUtils;
 
 
+import android.net.wifi.WifiManager;
+import android.net.wifi.WifiManager.MulticastLock;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.app.Activity;
+import android.content.Context;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -20,6 +23,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class TTTMainActivity extends Activity implements Observer{
 	
@@ -41,6 +45,7 @@ public class TTTMainActivity extends Activity implements Observer{
 	private Button[] buttons=new Button[10];
 	
 	private Handler hdlr=new Handler(); 
+	private MulticastLock mcLock;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -80,6 +85,10 @@ public class TTTMainActivity extends Activity implements Observer{
 		//println("Using address: " + address);
 		System.out.println("Using address: " + address);
 		String user = "test" + Build.MODEL;
+		WifiManager wifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+		
+		mcLock = wifi.createMulticastLock("mylock");
+		mcLock.acquire();
 		
 		ControlCenter.setUpConnectionsWithHelper("TicTacToe", user, address, new StartupWaitForObjects(1));
 		Vector shareObs = ControlCenter.getAllObjects();
@@ -161,8 +170,10 @@ public class TTTMainActivity extends Activity implements Observer{
     	boolean legal=false;
     	if(playerNum==1){
     		legal=tModel.OPlays(position);
+    		tModel.setLastMove("O");
     	}else{
     		legal=tModel.XPlays(position);
+    		tModel.setLastMove("X");
     	}
     	if(legal){
     		tModel.change();
@@ -221,5 +232,12 @@ public class TTTMainActivity extends Activity implements Observer{
 			}
 		}
 	}
-    
+    public void onDestroy(){
+    	super.onDestroy();
+    	ControlCenter.closeUpConnections();
+    	if (mcLock.isHeld()) {
+			mcLock.release();
+		}
+		Toast.makeText(this, "Activity destroied",	Toast.LENGTH_LONG).show();
+    }
 }

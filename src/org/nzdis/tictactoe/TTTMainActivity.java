@@ -19,11 +19,11 @@ import android.content.Context;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-//import android.support.v4.app.NavUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+
 
 public class TTTMainActivity extends Activity implements Observer{
 	
@@ -176,9 +176,20 @@ public class TTTMainActivity extends Activity implements Observer{
     		tModel.setLastMove("X");
     	}
     	if(legal){
-    		tModel.change();
+    		//tModel.change(); //transfer the whole object
+    		//transfer only changed fields
+    		try{
+    		tModel.change(tModel.getClass().getField("positions").getName());
+    		tModel.change(tModel.getClass().getField("lastMove").getName());
+    		}catch (Exception e) {
+    			System.out.println("No such field");
+    			e.printStackTrace();
+    			
+    		}
     	}else{
     		//print illegal move info
+    		Toast.makeText(this, "Illegal move! Wait until the other peer moves.",	Toast.LENGTH_LONG).show();
+    		//messinfo.setText("Illegal move!");
     		Log.e("Tictactoe","Illegal move!");
     		
     	}
@@ -186,11 +197,11 @@ public class TTTMainActivity extends Activity implements Observer{
     }
     
    
-    @Override
+/*    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.activity_tttmain, menu);
         return true;
-    }
+    }*/
 
 	public void update(Observable arg0, Object arg1) {
 		// TODO Auto-generated method stub

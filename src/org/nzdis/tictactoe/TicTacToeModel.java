@@ -6,10 +6,10 @@ import org.nzdis.fragme.objects.FMeObject;
 
 public class TicTacToeModel extends FMeObject {
 
-	private String[] positions = { "*", "1", "2", "3", "4", "5", "6", "7", "8",
+	public String[] positions = { "*", "1", "2", "3", "4", "5", "6", "7", "8",
 			"9" }; // "board" positions
 	private boolean new_game;
-	private String lastMove="";
+	public String lastMove="";
 
 	public TicTacToeModel() {
 	}

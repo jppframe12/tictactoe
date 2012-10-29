@@ -3,7 +3,7 @@
     <string name="app_name">TicTacToe</string>
     <string name="hello_world">Hello world!</string>
     <string name="menu_settings">Settings</string>
-    <string name="title_activity_tttmain">TTTMainActivity</string>
+    <string name="title_activity_tttmain">TicTacToe</string>
     <string name="player">player</string>
     <string name="restart">Restart</string>
     <string name="message">Message</string>

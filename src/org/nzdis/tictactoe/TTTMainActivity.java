@@ -17,14 +17,14 @@ import android.os.Handler;
 import android.app.Activity;
 import android.content.Context;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-
+/*
+ * TicTacToe game interface
+ */
 public class TTTMainActivity extends Activity implements Observer{
 	
 	private TextView player;
@@ -74,43 +74,54 @@ public class TTTMainActivity extends Activity implements Observer{
         bn9=(Button)findViewById(R.id.button9);
         buttons[9]=bn9;
         messinfo=(TextView)findViewById(R.id.textView2);
-        		
+        
         //set up connection
-        String address = NetworkUtils.getNonLoopBackAddressByProtocol(NetworkUtils.IPV4);
+        initialConnection();
+    }
+        
+	private void initialConnection() {
+		// set local address
+		String address = NetworkUtils
+				.getNonLoopBackAddressByProtocol(NetworkUtils.IPV4);
 		if (address == null) {
-			//println("Could not find a local ip address");
-			System.out.println("Could not find a local ip address");
+			Log.e("tictactoe", "Could not find a local ip address");
 			return;
 		}
-		//println("Using address: " + address);
-		System.out.println("Using address: " + address);
+
+		// set the peer name
 		String user = "test" + Build.MODEL;
+
+		// unlock multicast of the devices
 		WifiManager wifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
-		
 		mcLock = wifi.createMulticastLock("mylock");
 		mcLock.acquire();
+
+		//set up connection
+		ControlCenter.setUpConnectionsWithHelper("TicTacToe", user, address,
+				new StartupWaitForObjects(1));
 		
-		ControlCenter.setUpConnectionsWithHelper("TicTacToe", user, address, new StartupWaitForObjects(1));
+		// get shared objects
 		Vector shareObs = ControlCenter.getAllObjects();
 
 		if (shareObs.size() == 0) {
-			tModel=new TicTacToeModel();
-			tModel = (TicTacToeModel) ControlCenter.createNewObject(TicTacToeModel.class);
+			tModel = new TicTacToeModel();
+			tModel = (TicTacToeModel) ControlCenter
+					.createNewObject(TicTacToeModel.class);
 			Log.i("TicTacToe", "Create a new TicTacToe object");
-			playerNum=1;
+			playerNum = 1;
 			player.setText("Player1 (O)");
 
 		} else {
 			tModel = (TicTacToeModel) shareObs.get(0);
-			Log.i("TicTacToe", "join and share the TicTacToe object");
-			playerNum=2;
+			Log.i("TicTacToe", "Join and share the TicTacToe object");
+			playerNum = 2;
 			player.setText("Player2 (X)");
 		}
-		
+
 		tModel.addObserver(this);
 		this.update(tModel, null);
-        
-    }
+
+	}
     
     //buttons click handlers
 	public void onPosition1(View view) {
@@ -166,7 +177,7 @@ public class TTTMainActivity extends Activity implements Observer{
 	}
     
     //method for process handler
-    public void buttonClick(int position){
+	private void buttonClick(int position){
     	boolean legal=false;
     	if(playerNum==1){
     		legal=tModel.OPlays(position);
@@ -182,29 +193,22 @@ public class TTTMainActivity extends Activity implements Observer{
     		tModel.change(tModel.getClass().getField("positions").getName());
     		tModel.change(tModel.getClass().getField("lastMove").getName());
     		}catch (Exception e) {
-    			System.out.println("No such field");
+    			Log.e("TicTacToe","No such field");
     			e.printStackTrace();
     			
     		}
     	}else{
     		//print illegal move info
     		Toast.makeText(this, "Illegal move! Wait until the other peer moves.",	Toast.LENGTH_LONG).show();
-    		//messinfo.setText("Illegal move!");
     		Log.e("Tictactoe","Illegal move!");
     		
     	}
     	this.update(tModel, null);
     }
     
-   
-/*    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.activity_tttmain, menu);
-        return true;
-    }*/
-
+   //implement update method of Observer interface
 	public void update(Observable arg0, Object arg1) {
-		// TODO Auto-generated method stub
+		
 		final TicTacToeModel tttm=(TicTacToeModel)arg0;
 		hdlr.post(new Runnable() {
 			public void run(){
@@ -212,7 +216,8 @@ public class TTTMainActivity extends Activity implements Observer{
 		});
 	
 	}
-	public void updateInterface(TicTacToeModel model){
+	//update interface
+	private void updateInterface(TicTacToeModel model){
 		String[] positions=model.getPositions();
 		if(model.isNew_game()){
 			messinfo.setText("");
@@ -243,6 +248,7 @@ public class TTTMainActivity extends Activity implements Observer{
 			}
 		}
 	}
+	
     public void onDestroy(){
     	super.onDestroy();
     	ControlCenter.closeUpConnections();
